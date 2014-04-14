@@ -37,8 +37,8 @@
 <div class="container">
 
     <div class="starter-template">
-        <h1>Bootstrap starter template</h1>
-        <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
+        <h1>Charts using d3.js</h1>
+        <p class="lead">Different charts types created using d3.js javascript library.<br> Charts are rendered using svg!</p>
     </div>
 
     <div class="row">
@@ -52,6 +52,10 @@
         <div class="col-lg-4" id="graph3">
             <h2>Pie Chart</h2>
         </div>
+
+        <div class="col-lg-4" id="graph4">
+            <h2>Horizontal Bar Chart</h2>
+        </div>
     </div>
 </div>
 
@@ -62,7 +66,7 @@
 <script src="js/d3.min.js"></script>
 <script src="js/charts.js"></script>
 <script type="application/javascript">
-
+    var data = [10,23,43,1,43,54,5,7,45,8,23];
     var moreData = [{ category: "Jan", value: 10},
         { category: "Feb", value: 20},
         { category: "Mar", value: 30},
@@ -85,6 +89,7 @@
     // verticalColumnChart(d3.select("#graph3"), moreData);
     pieChart(d3.select("#graph3"),pieData);
     // lineGraph(d3.select("#graph3"),lineData3,"blue");
+    horizontalColumnChart(d3.select("#graph4"),moreData);
 </script>
 </body>
 </html>

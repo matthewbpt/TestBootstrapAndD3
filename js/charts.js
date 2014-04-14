@@ -3,33 +3,51 @@
  */
 
 var horizontalColumnChart = function(node,data){
-    var height = 200, width = 350;
+    //set chart dimensions
+    var margin = {top: 10 , right: 0, bottom: 20, left: 30},
+        width = 350 - margin.left - margin.right ,
+        height = 240 - margin.top - margin.bottom;
     // create div of class columnchart
     var svgContainer = node.append("svg")
-        .attr("class", "barchart")
-        .attr("width", width)
-        .attr("height", height);
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // get max for scaling
-    var max = d3.max(data);
+    var max = d3.max(data, function(d) { return +d.value; });
     var scale = d3.scale.linear().domain([0,max]).range([0,width]);
-    // add data to div
+    var verticalScale = d3.scale.ordinal()
+        .rangeRoundBands([height, 0], .1)
+        .domain(data.map(function(d) { return d.category; }));
+
+    var horizontalAxis = d3.svg.axis()
+        .scale(scale)
+        .orient("bottom");
+
+    var verticalAxis = d3.svg.axis()
+        .scale(verticalScale)
+        .orient("left");
 
     var bar = svgContainer.selectAll("g")
         .data(data)
         .enter()
         .append("g")
+        .attr("class", "bar")
         .attr("transform", function(d, i) { return "translate(0," + i * (height / data.length) + ")"; });
 
     bar.append("rect")
-        .attr("width", scale)
+        .attr("width", function(d){ return scale(d.value); })
         .attr("height", (height / data.length) - 1);
 
-    bar.append("text")
-        .attr("x", function(d) { return scale(d) - 3; })
-        .attr("y", 20/2)
-        .attr("dy", ".35em")
-        .text(function(d) { return d; });
+    svgContainer.append("g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(horizontalAxis);
+
+    svgContainer.append("g")
+        .attr("class", "x axis")
+        .call(verticalAxis);
 
     return svgContainer;
 };
@@ -83,12 +101,10 @@ var lineChart = function(node,data){
         .call(yAxis);
 
     // add bars to chart
-    svgContainer.append("path")
-        //.attr("class", "line")
-        .attr("d", lineFunction(data))
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 1)
-        .attr("fill", "none");
+    svgContainer.append("g")
+        .attr("class", "line")
+        .append("path")
+        .attr("d", lineFunction(data));
 
     return svgContainer;
 };
@@ -158,7 +174,7 @@ var  pieChart = function(node,data){
         .data([data])
         .attr("width", width)
         .attr("height", height)
-        .append("svg:g")
+        .append("g")
         .attr("transform", "translate(" + width/2 + "," + radius + ")");
 
     var arc = d3.svg
@@ -172,14 +188,14 @@ var  pieChart = function(node,data){
     var arcs = svgContainer.selectAll("g.slice")
         .data(pie)
         .enter()
-        .append("svg:g")
+        .append("g")
         .attr("class","slice");
 
-    arcs.append("svg:path")
+    arcs.append("path")
         .attr("fill", function(d,i){ return color(i); })
         .attr("d", arc);
 
-    arcs.append("svg:text")                                     //add a label to each slice
+    arcs.append("text")                                     //add a label to each slice
         .attr("transform", function(d) {                    //set the label's origin to the center of the arc
             //we have to make sure to set these before calling arc.centroid
             d.innerRadius = 0;
@@ -192,18 +208,4 @@ var  pieChart = function(node,data){
     return svgContainer;
 
 };
-/*
-var lineData1 = [ { "x": 1,   "y": 5},  { "x": 20,  "y": 20},
-    { "x": 40,  "y": 5},  { "x": 60,  "y": 35},
-    { "x": 80,  "y": 15},  { "x": 100,  "y": 45},
-    { "x": 120, "y": 10},  { "x": 140,  "y": 1},
-    { "x": 160, "y": 10},  { "x": 180,  "y": 1}];
-
-var lineData3 = [ { "x": 1,   "y": 100},  { "x": 20,  "y": 210},
-    { "x": 40,  "y": 130},  { "x": 60,  "y": 147},
-    { "x": 80,  "y": 100},  { "x": 100,  "y": 75},
-    { "x": 120, "y": 110},  { "x": 140,  "y": 129},
-    { "x": 160, "y": 156},  { "x": 180,  "y": 140}];
-*/
-
 
