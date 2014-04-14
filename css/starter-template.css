@@ -5,3 +5,50 @@ body {
     padding: 40px 15px;
     text-align: center;
 }
+/*.columnchart div {*/
+    /*font: 10px sans-serif;*/
+    /*background-color: steelblue;*/
+    /*text-align: right;*/
+    /*padding: 3px;*/
+    /*margin: 1px;*/
+    /*color: white;*/
+/*}*/
+
+.barchart rect {
+    fill: steelblue;
+}
+
+.barchart text {
+    fill: white;
+    font: 10px sans-serif;
+    text-anchor: end;
+}
+
+.columnchart rect {
+    fill: steelblue;
+}
+
+.columnchart text {
+    fill: white;
+    font: 10px sans-serif;
+    text-anchor: middle;
+}
+
+.bar {
+    fill: steelblue;
+}
+
+.axis text {
+    font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.x.axis path {
+    display: none;
+}
