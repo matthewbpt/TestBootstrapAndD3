@@ -47,26 +47,27 @@ var lineGraph = function(node,data,colour) {
 };
 
 var horizontalColumnChart = function(node,data){
+    var height = 200, width = 350;
     // create div of class columnchart
     var svgContainer = node.append("svg")
         .attr("class", "barchart")
-        .attr("width", 350)
-        .attr("height", 200);
+        .attr("width", width)
+        .attr("height", height);
 
     // get max for scaling
     var max = d3.max(data);
-    var scale = d3.scale.linear().domain([0,max]).range([0,350]);
+    var scale = d3.scale.linear().domain([0,max]).range([0,width]);
     // add data to div
 
     var bar = svgContainer.selectAll("g")
         .data(data)
         .enter()
         .append("g")
-        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+        .attr("transform", function(d, i) { return "translate(0," + i * (height / data.length) + ")"; });
 
     bar.append("rect")
         .attr("width", scale)
-        .attr("height", 19);
+        .attr("height", (height / data.length) - 1);
 
     bar.append("text")
         .attr("x", function(d) { return scale(d) - 3; })
@@ -78,19 +79,21 @@ var horizontalColumnChart = function(node,data){
 };
 
 var verticalColumnChart = function(node,data){
-    // create div of class columnchart
-    var margin = {top: 0 , right: 0, bottom: 20, left: 20};
-
-    var width = 350 - margin.left - margin.right ,
+    // set chart dimensions
+    var margin = {top: 0 , right: 0, bottom: 20, left: 20},
+        width = 350 - margin.left - margin.right ,
         height = 200 - margin.top - margin.bottom;
 
+    // create vertical scale
     var max = d3.max(data, function(d) { return +d.value; });
     var y = d3.scale.linear().domain([0,max]).range([height,0]);
 
+    //create horizontal scale
     var x = d3.scale.ordinal()
         .rangeRoundBands([0, width], .1)
         .domain(data.map(function(d) { return d.category; }));
 
+    //create axis objects
     var xAxis = d3.svg.axis()
         .scale(x)
         .orient("bottom");
@@ -99,21 +102,23 @@ var verticalColumnChart = function(node,data){
         .scale(y)
         .orient("left");
 
+    // create container object for chart
     var svgContainer = node.append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+    // add axes to contained object
     svgContainer.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
-
     svgContainer.append("g")
         .attr("class", "y axis")
         .call(yAxis);
 
+    // add bars to chart
     svgContainer.selectAll(".bar")
         .data(data)
         .enter()
@@ -139,7 +144,7 @@ var lineData3 = [ { "x": 1,   "y": 100},  { "x": 20,  "y": 210},
     { "x": 120, "y": 110},  { "x": 140,  "y": 129},
     { "x": 160, "y": 156},  { "x": 180,  "y": 140}];
 
-var chartData = [10,20,30,40,30,10,34,98,23,34,32,12,23,56,43,1];
+var chartData = [10,20,30,40,30,10,34,98,23,34]
 
 var moreData = [{ category: "Jan", value: 10},
     { category: "Feb", value: 20},
