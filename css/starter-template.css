@@ -52,3 +52,14 @@ body {
 .x.axis path {
     display: none;
 }
+
+.line path {
+    stroke: steelblue;
+    stroke-width: 1;
+    fill: none;
+}
+
+.slice text {
+    font-size: 16pt;
+    font-family: Arial;
+}

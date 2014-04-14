@@ -43,14 +43,14 @@
 
     <div class="row">
         <div class="col-lg-4" id="graph1">
-            <h2>Graph 1</h2>
+            <h2>Line Chart</h2>
         </div>
         <div class="col-lg-4" id="graph2">
-            <h2>Graph 2</h2>
+            <h2>Bar Chart</h2>
 
         </div>
         <div class="col-lg-4" id="graph3">
-            <h2>Graph 3</h2>
+            <h2>Pie Chart</h2>
         </div>
     </div>
 </div>
@@ -61,5 +61,30 @@
 <script src="js/bootstrap.min.js"></script>
 <script src="js/d3.min.js"></script>
 <script src="js/charts.js"></script>
+<script type="application/javascript">
+
+    var moreData = [{ category: "Jan", value: 10},
+        { category: "Feb", value: 20},
+        { category: "Mar", value: 30},
+        { category: "Apr", value: 40},
+        { category: "May", value: 30},
+        { category: "Jun", value: 10},
+        { category: "Jul", value: 34},
+        { category: "Aug", value: 98},
+        { category: "Sep", value: 23},
+        { category: "Oct", value: 34},
+        { category: "Nov", value: 32},
+        { category: "Dec", value: 12}];
+
+    var pieData = [{"label":"one", "value":20},
+        {"label":"two", "value":50},
+        {"label":"three", "value":30}];
+
+    lineChart(d3.select("#graph1"),moreData);
+    verticalColumnChart(d3.select("#graph2"),moreData);
+    // verticalColumnChart(d3.select("#graph3"), moreData);
+    pieChart(d3.select("#graph3"),pieData);
+    // lineGraph(d3.select("#graph3"),lineData3,"blue");
+</script>
 </body>
 </html>
