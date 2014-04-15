@@ -44,10 +44,17 @@ var charts = {
             });
 
         bar.append("rect")
+            .attr("width", 0)
+            .transition()
+            .delay(function(d,i){
+                return 500 + 100*i;
+            })
+            .duration(1500)
             .attr("width", function (d) {
                 return scale(d.value);
             })
-            .attr("height", (height / data.length) - 1);
+            .attr("height", (height / data.length) - 1)
+            .ease("elastic");
 
         svgContainer.append("g")
             .attr("class", "y axis")
@@ -119,10 +126,20 @@ var charts = {
             .call(yAxis);
 
         // add line path
-        svgContainer.append("g")
+        var line = svgContainer.append("g")
             .attr("class", "line")
             .append("path")
             .attr("d", lineFunction(data));
+
+        var totalLength = line.node().getTotalLength();
+
+        line.attr("stroke-dasharray", totalLength + " " + totalLength)
+            .attr("stroke-dashoffset", totalLength)
+            .transition()
+            .delay(500)
+            .duration(1500)
+            .ease("linear")
+            .attr("stroke-dashoffset", 0);
 
         return svgContainer;
     },
@@ -180,12 +197,20 @@ var charts = {
             .attr("x", function (d) {
                 return x(d.category);
             })
+            .attr("y",height)
+            .attr("height", 0)
+            .transition()
+            .delay(function(d,i){
+                return 500 + 100*i;
+            })
+            .duration(1500)
             .attr("y", function (d) {
                 return y(d.value);
             })
             .attr("height", function (d) {
                 return height - y(d.value);
             })
+            .ease("elastic")
             .attr("width", x.rangeBand());
 
         return svgContainer;
@@ -207,7 +232,8 @@ var charts = {
 
         var arc = d3.svg
             .arc()
-            .outerRadius(radius);
+            .outerRadius(radius)
+            .innerRadius(radius - 50);
 
         var pie = d3.layout
             .pie()
@@ -225,19 +251,27 @@ var charts = {
             .attr("fill", function (d, i) {
                 return color(i);
             })
-            .attr("d", arc);
-
-        arcs.append("text")
-            .attr("transform", function (d) {
-                //we have to make sure to set these before calling arc.centroid
-                d.innerRadius = 0;
-                d.outerRadius = radius;
-                return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
-            })
-            .attr("text-anchor", "middle")                          //center the text on it's origin
-            .text(function (d, i) {
-                return data[i].label;
+            .transition().delay(function(d, i) { return 500 + i * 100; }).duration(1500)
+            .attrTween('d', function(d) {
+                var i = d3.interpolate(d.startAngle+0.1, d.endAngle);
+                return function(t) {
+                    d.endAngle = i(t);
+                    return arc(d);
+                }
             });
+            //.attr("d", arc);
+
+//        arcs.append("text")
+//            .attr("transform", function (d) {
+//                //we have to make sure to set these before calling arc.centroid
+//                d.innerRadius = 0;
+//                d.outerRadius = radius;
+//                return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+//            })
+//            .attr("text-anchor", "middle")                          //center the text on it's origin
+//            .text(function (d, i) {
+//                return data[i].label;
+//            });
 
         return svgContainer;
 
