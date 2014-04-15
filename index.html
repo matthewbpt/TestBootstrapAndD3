@@ -74,20 +74,7 @@
 <script src="js/charts.js"></script>
 <script type="application/javascript">
 
-    var moreData = [{ category: "Jan", value: 10},
-        { category: "Feb", value: 20},
-        { category: "Mar", value: 30},
-        { category: "Apr", value: 40},
-        { category: "May", value: 30},
-        { category: "Jun", value: 10},
-        { category: "Jul", value: 34},
-        { category: "Aug", value: 98},
-        { category: "Sep", value: 23},
-        { category: "Oct", value: 34},
-        { category: "Nov", value: 32},
-        { category: "Dec", value: 12}];
-
-    var moreData2 = [
+    var data = [
         { date: "Jan 2013", value: 10, category: "Jan"},
         { date: "Feb 2013", value: 20, category: "Feb"},
         { date: "Mar 2013", value: 30, category: "Mar"},
@@ -106,11 +93,11 @@
         {"label":"two", "value":50},
         {"label":"three", "value":30}];
 
-    charts.lineChart(d3.select("#graph1"),moreData2);
-    charts.verticalColumnChart(d3.select("#graph2"),moreData2);
-    charts.pieChart(d3.select("#graph3"),moreData2);
-    charts.horizontalColumnChart(d3.select("#graph4"),moreData2);
-    charts.timeBar(d3.select("#timebar"),moreData2)
+    charts.lineChart(d3.select("#graph1"),data);
+    charts.verticalColumnChart(d3.select("#graph2"),data);
+    charts.pieChart(d3.select("#graph3"),data);
+    charts.horizontalColumnChart(d3.select("#graph4"),data);
+    charts.timeBar(d3.select("#timebar"),data)
 </script>
 </body>
 </html>

@@ -312,7 +312,7 @@ var charts = {
             color = d3.scale.category20c();
 
         var parseDate = d3.time.format("%b %Y").parse;
-        
+
         var svgContainer = node.append("svg")
             .attr("width", width)
             .attr("height", height)
@@ -347,7 +347,7 @@ var charts = {
                     return color(i);
                 })
                 .transition().delay(function (d, i) {
-                    return 500 + i * 100;
+                    return  i * 100;
                 }).duration(1500)
                 .attrTween('d', function (d) {
                     var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
