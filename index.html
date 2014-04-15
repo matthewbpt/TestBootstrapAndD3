@@ -88,28 +88,28 @@
         { category: "Dec", value: 12}];
 
     var moreData2 = [
-        { category: "Jan 2013", value: 10},
-        { category: "Feb 2013", value: 20},
-        { category: "Mar 2013", value: 30},
-        { category: "Apr 2013", value: 40},
-        { category: "May 2013", value: 30},
-        { category: "Jun 2013", value: 10},
-        { category: "Jul 2013", value: 34},
-        { category: "Aug 2013", value: 98},
-        { category: "Sep 2013", value: 23},
-        { category: "Oct 2013", value: 34},
-        { category: "Nov 2013", value: 32},
-        { category: "Dec 2013", value: 12},
-        ];
+        { date: "Jan 2013", value: 10, category: "Jan"},
+        { date: "Feb 2013", value: 20, category: "Feb"},
+        { date: "Mar 2013", value: 30, category: "Mar"},
+        { date: "Apr 2013", value: 40, category: "Apr"},
+        { date: "May 2013", value: 30, category: "May"},
+        { date: "Jun 2013", value: 10, category: "Jun"},
+        { date: "Jul 2013", value: 34, category: "Jul"},
+        { date: "Aug 2013", value: 98, category: "Aug"},
+        { date: "Sep 2013", value: 23, category: "Sep"},
+        { date: "Oct 2013", value: 34, category: "Oct"},
+        { date: "Nov 2013", value: 32, category: "Nov"},
+        { date: "Dec 2013", value: 12, category: "Dec"},
+    ];
 
     var pieData = [{"label":"one", "value":20},
         {"label":"two", "value":50},
         {"label":"three", "value":30}];
 
-    charts.lineChart(d3.select("#graph1"),moreData);
-    charts.verticalColumnChart(d3.select("#graph2"),moreData);
-    charts.pieChart(d3.select("#graph3"),pieData);
-    charts.horizontalColumnChart(d3.select("#graph4"),moreData);
+    charts.lineChart(d3.select("#graph1"),moreData2);
+    charts.verticalColumnChart(d3.select("#graph2"),moreData2);
+    charts.pieChart(d3.select("#graph3"),moreData2);
+    charts.horizontalColumnChart(d3.select("#graph4"),moreData2);
     charts.timeBar(d3.select("#timebar"),moreData2)
 </script>
 </body>
