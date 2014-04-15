@@ -7,14 +7,15 @@ var horizontalColumnChart = function(node,data){
     var margin = {top: 10 , right: 0, bottom: 20, left: 30},
         width = 350 - margin.left - margin.right ,
         height = 240 - margin.top - margin.bottom;
-    // create div of class columnchart
+
+    // create svg element to hold chart
     var svgContainer = node.append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    // get max for scaling
+    // set scaling
     var max = d3.max(data, function(d) { return +d.value; });
     var scale = d3.scale.linear().domain([0,max]).range([0,width]);
     var verticalScale = d3.scale.ordinal()
@@ -76,6 +77,7 @@ var lineChart = function(node,data){
         .scale(y)
         .orient("left");
 
+    // function to create path from data
     var lineFunction = d3.svg.line()
         //apply  x-axis scale
         .x(function (d){ return x(d.category); })
@@ -100,7 +102,7 @@ var lineChart = function(node,data){
         .attr("class", "y axis")
         .call(yAxis);
 
-    // add bars to chart
+    // add line path
     svgContainer.append("g")
         .attr("class", "line")
         .append("path")
@@ -195,8 +197,8 @@ var  pieChart = function(node,data){
         .attr("fill", function(d,i){ return color(i); })
         .attr("d", arc);
 
-    arcs.append("text")                                     //add a label to each slice
-        .attr("transform", function(d) {                    //set the label's origin to the center of the arc
+    arcs.append("text")
+        .attr("transform", function(d) {
             //we have to make sure to set these before calling arc.centroid
             d.innerRadius = 0;
             d.outerRadius = radius;
@@ -209,3 +211,77 @@ var  pieChart = function(node,data){
 
 };
 
+var timeBar =  function(node,data){
+
+    var margin = {top: 10 , right: 25, bottom: 20, left: 25},
+        width = 1170 - margin.left - margin.right ,
+        height = 65 - margin.top - margin.bottom;
+
+    var parseDate = d3.time.format("%b %Y").parse;
+
+    var x = d3.time.scale()
+            .range([0, width])
+            .domain(d3.extent(data.map(function (d) { return parseDate(d.category); }))),
+        y = d3.scale.linear()
+            .range([height, 0])
+            .domain([0,d3.max(data, function (d) { return d.value; })]);
+
+    //create axis objects
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+
+    var brush = d3.svg.brush()
+        .x(x)
+        .extent([parseDate(data[0].category), parseDate(data[1].category)])
+        .on("brushend", brushended);
+
+    var svgContainer = node.append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var area = d3.svg.area()
+        .interpolate("monotone")
+        .x(function(d) { return x(parseDate(d.category)); })
+        .y0(height)
+        .y1(function(d) { return y(d.value); });
+
+    svgContainer.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    // add line path
+    svgContainer.append("g")
+        .attr("class", "area")
+        .append("path")
+        .attr("d", area(data));
+
+    var gBrush = svgContainer.append("g")
+        .attr("class", "brush")
+        .call(brush)
+        .call(brush.event);
+
+    gBrush.selectAll("rect")
+        .attr("height", height);
+
+    function brushended() {
+        if (!d3.event.sourceEvent) return; // only transition after input
+        var extent0 = brush.extent(),
+            extent1 = extent0.map(d3.time.month.round);
+
+        // if empty when rounded, use floor & ceil instead
+        if (extent1[0] >= extent1[1]) {
+            extent1[0] = d3.time.month.floor(extent0[0]);
+            extent1[1] = d3.time.month.ceil(extent0[1]);
+        }
+
+        d3.select(this).transition()
+            .call(brush.extent(extent1))
+            .call(brush.event);
+    }
+
+    return svgContainer;
+};

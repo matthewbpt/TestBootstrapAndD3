@@ -38,22 +38,28 @@
 
     <div class="starter-template">
         <h1>Charts using d3.js</h1>
-        <p class="lead">Different charts types created using d3.js javascript library.<br> Charts are rendered using svg!</p>
+        <p class="lead">Different charts types created using d3.js javascript library.<br> Charts are rendered
+            using svg!</p>
     </div>
 
     <div class="row">
-        <div class="col-lg-4" id="graph1">
+
+        <div class="col-lg-12" id="timebar">
+
+        </div>
+
+        <div class="col-lg-4 col-md-4 col-sm-6" id="graph1">
             <h2>Line Chart</h2>
         </div>
-        <div class="col-lg-4" id="graph2">
+        <div class="col-lg-4 col-md-4 col-sm-6" id="graph2">
             <h2>Bar Chart</h2>
 
         </div>
-        <div class="col-lg-4" id="graph3">
+        <div class="col-lg-4 col-md-4 col-sm-6" id="graph3">
             <h2>Pie Chart</h2>
         </div>
 
-        <div class="col-lg-4" id="graph4">
+        <div class="col-lg-4 col-md-4 col-sm-6" id="graph4">
             <h2>Horizontal Bar Chart</h2>
         </div>
     </div>
@@ -66,7 +72,7 @@
 <script src="js/d3.min.js"></script>
 <script src="js/charts.js"></script>
 <script type="application/javascript">
-    var data = [10,23,43,1,43,54,5,7,45,8,23];
+
     var moreData = [{ category: "Jan", value: 10},
         { category: "Feb", value: 20},
         { category: "Mar", value: 30},
@@ -80,16 +86,30 @@
         { category: "Nov", value: 32},
         { category: "Dec", value: 12}];
 
+    var moreData2 = [{ category: "Dec 2012", value: 10},
+        { category: "Jan 2013", value: 10},
+        { category: "Feb 2013", value: 20},
+        { category: "Mar 2013", value: 30},
+        { category: "Apr 2013", value: 40},
+        { category: "May 2013", value: 30},
+        { category: "Jun 2013", value: 10},
+        { category: "Jul 2013", value: 34},
+        { category: "Aug 2013", value: 98},
+        { category: "Sep 2013", value: 23},
+        { category: "Oct 2013", value: 34},
+        { category: "Nov 2013", value: 32},
+        { category: "Dec 2013", value: 12},
+        { category: "Jan 2014", value: 25}];
+
     var pieData = [{"label":"one", "value":20},
         {"label":"two", "value":50},
         {"label":"three", "value":30}];
 
     lineChart(d3.select("#graph1"),moreData);
     verticalColumnChart(d3.select("#graph2"),moreData);
-    // verticalColumnChart(d3.select("#graph3"), moreData);
     pieChart(d3.select("#graph3"),pieData);
-    // lineGraph(d3.select("#graph3"),lineData3,"blue");
     horizontalColumnChart(d3.select("#graph4"),moreData);
+    timeBar(d3.select("#timebar"),moreData2)
 </script>
 </body>
 </html>
