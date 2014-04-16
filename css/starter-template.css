@@ -28,9 +28,9 @@ body {
     fill: brown
 }
 
-.slice path:hover{
-    fill: brown
-}
+/*.slice path:hover{*/
+    /*fill: brown*/
+/*}*/
 
 .axis text {
     font: 10px sans-serif;

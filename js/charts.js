@@ -365,15 +365,20 @@ var charts = {
             filter;
 
         createChart = function (chartData) {
-            var selection, arc, pie, arcs;
+            var selection, arc, arc2, pie, arcs;
             svgContainer.selectAll("g").remove();
 
             selection = svgContainer.data([chartData]);
 
             arc = d3.svg
                 .arc()
+                .outerRadius(radius - 10)
+                .innerRadius(radius - 60);
+
+            arc2 = d3.svg
+                .arc()
                 .outerRadius(radius)
-                .innerRadius(radius - 50);
+                .innerRadius(radius - 60);
 
             pie = d3.layout
                 .pie()
@@ -385,7 +390,19 @@ var charts = {
                 .data(pie)
                 .enter()
                 .append("g")
-                .attr("class", "slice");
+                .attr("class", "slice")
+                .on("mouseover",function (d, i){
+                    d3.select(this)
+                        .select("path")
+                        .transition()
+                        .duration(500).attr("d", arc2);
+                })
+                .on("mouseout",function (d, i){
+                    d3.select(this)
+                        .select("path")
+                        .transition()
+                        .duration(500).attr("d", arc);
+                });
 
             arcs.append("path")
                 .attr("fill", function (d, i) {
