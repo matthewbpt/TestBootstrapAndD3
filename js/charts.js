@@ -3,42 +3,48 @@
  */
 var charts = {
     horizontalColumnChart : function (node, data) {
-        //set chart dimensions
+        'use strict';
         var margin = {top: 10, right: 0, bottom: 20, left: 30},
-            width = 350 - margin.left - margin.right ,
-            height = 240 - margin.top - margin.bottom;
+            width = 360 - margin.left - margin.right,
+            height = 240 - margin.top - margin.bottom,
+            svgContainer,
+            parseDate,
+            createChart,
+            filter;
 
-        var parseDate = d3.time.format("%b %Y").parse;
+        parseDate = d3.time.format("%b %Y").parse;
 
         // create svg element to hold chart
-        var svgContainer = node.append("svg")
+        svgContainer = node.append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var createChart = function(chartData) {
+        createChart = function (chartData) {
+            var max, scale, verticalScale, horizontalAxis, verticalAxis, bar;
+
             svgContainer.selectAll("g").remove();
             // set scaling
-            var max = d3.max(chartData, function (d) {
+            max = d3.max(chartData, function (d) {
                 return +d.value;
             });
-            var scale = d3.scale.linear().domain([0, max]).range([0, width]);
-            var verticalScale = d3.scale.ordinal()
-                .rangeRoundBands([height, 0], .1)
+            scale = d3.scale.linear().domain([0, max]).range([0, width]);
+            verticalScale = d3.scale.ordinal()
+                .rangeRoundBands([0, height], 0.1)
                 .domain(chartData.map(function (d) {
                     return d.category;
                 }));
 
-            var horizontalAxis = d3.svg.axis()
+            horizontalAxis = d3.svg.axis()
                 .scale(scale)
                 .orient("bottom");
 
-            var verticalAxis = d3.svg.axis()
+            verticalAxis = d3.svg.axis()
                 .scale(verticalScale)
                 .orient("left");
 
-            var bar = svgContainer.selectAll("g")
+            bar = svgContainer.selectAll("g")
                 .data(chartData)
                 .enter()
                 .append("g")
@@ -51,7 +57,7 @@ var charts = {
                 .attr("width", 0)
                 .transition()
                 .delay(function (d, i) {
-                    return 500 + 100 * i;
+                    return 100 * i;
                 })
                 .duration(1500)
                 .attr("width", function (d) {
@@ -72,20 +78,21 @@ var charts = {
 
         createChart(data);
 
-        function filter(extent){
-            if(!extent) {
+        filter = function (extent) {
+            var start, end, newData;
+            if (!extent) {
                 return;
             }
 
-            var start = extent[0];
-            var end = extent[1];
-            var newData = data.filter(function(element) {
+            start = extent[0];
+            end = extent[1];
+            newData = data.filter(function (element) {
                 var date = parseDate(element.date);
                 return date >= start && date < end;
             });
 
             createChart(newData);
-        }
+        };
 
         charts.timeRangeChangedListeners.push(filter);
 
@@ -93,48 +100,52 @@ var charts = {
     },
 
     lineChart : function (node, data) {
-        // set chart dimensions
+        'use strict';
         var margin = {top: 10, right: 0, bottom: 20, left: 25},
-            width = 350 - margin.left - margin.right ,
-            height = 200 - margin.top - margin.bottom;
+            width = 360 - margin.left - margin.right,
+            height = 200 - margin.top - margin.bottom,
+            parseDate = d3.time.format("%b %Y").parse,
+            svgContainer,
+            createChart,
+            filter;
 
-        var parseDate = d3.time.format("%b %Y").parse;
+        parseDate = d3.time.format("%b %Y").parse;
 
         // create container object for chart
-        var svgContainer = node.append("svg")
+        svgContainer = node.append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var createChart = function(chartData) {
-
+        createChart = function (chartData) {
+            var max, x, y, xAxis, yAxis, lineFunction, offset, line, totalLength, selection;
             svgContainer.selectAll("g").remove();
-
+            svgContainer.selectAll(".bar").remove();
             // create vertical scale
-            var max = d3.max(chartData, function (d) {
+            max = d3.max(chartData, function (d) {
                 return +d.value;
             });
-            var y = d3.scale.linear().domain([0, max]).range([height, 0]);
+            y = d3.scale.linear().domain([0, max]).range([height, 0]);
 
             //create horizontal scale
-            var x = d3.scale.ordinal()
-                .rangeRoundBands([0, width], .1)
+            x = d3.scale.ordinal()
+                .rangeRoundBands([0, width], 0.1)
                 .domain(chartData.map(function (d) {
                     return d.category;
                 }));
 
             //create axis objects
-            var xAxis = d3.svg.axis()
+            xAxis = d3.svg.axis()
                 .scale(x)
                 .orient("bottom");
 
-            var yAxis = d3.svg.axis()
+            yAxis = d3.svg.axis()
                 .scale(y)
                 .orient("left");
 
             // function to create path from data
-            var lineFunction = d3.svg.line()
+            lineFunction = d3.svg.line()
                 //apply  x-axis scale
                 .x(function (d) {
                     return x(d.category);
@@ -155,42 +166,72 @@ var charts = {
                 .attr("class", "y axis")
                 .call(yAxis);
 
-            var offset = (width / chartData.length) / 2;
+            offset = (width / chartData.length) / 2;
 
-            // add line path
-            var line = svgContainer.append("g")
-                .attr("transform", "translate(" + offset + ",0)")
-                .attr("class", "line")
-                .append("path")
-                .attr("d", lineFunction(chartData));
 
-            var totalLength = line.node().getTotalLength();
+            if (chartData.length > 1) {
+                // add line path
+                line = svgContainer.append("g")
+                    .attr("transform", "translate(" + offset + ",0)")
+                    .attr("class", "line")
+                    .append("path")
+                    .attr("d", lineFunction(chartData));
 
-            line.attr("stroke-dasharray", totalLength + " " + totalLength)
-                .attr("stroke-dashoffset", totalLength)
-                .transition()
-                .delay(500)
-                .duration(1500)
-                .ease("linear")
-                .attr("stroke-dashoffset", 0);
+                totalLength = line.node().getTotalLength();
+
+                line.attr("stroke-dasharray", totalLength + " " + totalLength)
+                    .attr("stroke-dashoffset", totalLength)
+                    .transition()
+                    .duration(1500)
+                    .ease("linear")
+                    .attr("stroke-dashoffset", 0);
+            } else {
+                selection = svgContainer.selectAll(".bar")
+                    .data(chartData);
+
+                selection.exit().remove();
+
+                selection.enter()
+                    .append("rect")
+                    .attr("class", "bar")
+                    .attr("x", function (d) {
+                        return x(d.category);
+                    })
+                    .attr("y", height)
+                    .attr("height", 0)
+                    .transition()
+                    .delay(function (d, i) {
+                        return 100 * i;
+                    })
+                    .duration(1500)
+                    .attr("y", function (d) {
+                        return y(d.value);
+                    })
+                    .attr("height", function (d) {
+                        return height - y(d.value);
+                    })
+                    .ease("elastic")
+                    .attr("width", x.rangeBand());
+            }
         };
 
         createChart(data);
 
-        function filter(extent){
-            if(!extent) {
+        filter = function (extent) {
+            var start, end, newData;
+            if (!extent) {
                 return;
             }
 
-            var start = extent[0];
-            var end = extent[1];
-            var newData = data.filter(function(element) {
+            start = extent[0];
+            end = extent[1];
+            newData = data.filter(function (element) {
                 var date = parseDate(element.date);
                 return date >= start && date < end;
             });
 
             createChart(newData);
-        }
+        };
 
         charts.timeRangeChangedListeners.push(filter);
 
@@ -198,45 +239,47 @@ var charts = {
     },
 
     verticalColumnChart : function (node, data) {
+        'use strict';
         // set chart dimensions
-        var parseDate = d3.time.format("%b %Y").parse;
-
         var margin = {top: 10, right: 0, bottom: 20, left: 25},
-            width = 350 - margin.left - margin.right ,
-            height = 200 - margin.top - margin.bottom;
+            width = 360 - margin.left - margin.right,
+            height = 200 - margin.top - margin.bottom,
+            parseDate = d3.time.format("%b %Y").parse,
+            svgContainer,
+            createChart,
+            filter;
 
         // create container object for chart
-        var svgContainer = node.append("svg")
+        svgContainer = node.append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-
-        var createChart = function(chartData) {
-
+        createChart = function (chartData) {
+            var max, y, x, xAxis, yAxis, selection;
             svgContainer.selectAll("g").remove();
             svgContainer.selectAll(".bar").remove();
 
             // create vertical scale
-            var max = d3.max(chartData, function (d) {
+            max = d3.max(chartData, function (d) {
                 return +d.value;
             });
-            var y = d3.scale.linear().domain([0, max]).range([height, 0]);
+            y = d3.scale.linear().domain([0, max]).range([height, 0]);
 
             //create horizontal scale
-            var x = d3.scale.ordinal()
-                .rangeRoundBands([0, width], .1)
+            x = d3.scale.ordinal()
+                .rangeRoundBands([0, width], 0.1)
                 .domain(chartData.map(function (d) {
                     return d.category;
                 }));
 
             //create axis objects
-            var xAxis = d3.svg.axis()
+            xAxis = d3.svg.axis()
                 .scale(x)
                 .orient("bottom");
 
-            var yAxis = d3.svg.axis()
+            yAxis = d3.svg.axis()
                 .scale(y)
                 .orient("left");
 
@@ -254,7 +297,7 @@ var charts = {
                 .call(yAxis);
 
             // add bars to chart
-            var selection = svgContainer.selectAll(".bar")
+            selection = svgContainer.selectAll(".bar")
                 .data(chartData);
 
             selection.exit().remove();
@@ -269,7 +312,7 @@ var charts = {
                 .attr("height", 0)
                 .transition()
                 .delay(function (d, i) {
-                    return 500 + 100 * i;
+                    return 100 * i;
                 })
                 .duration(1500)
                 .attr("y", function (d) {
@@ -284,14 +327,15 @@ var charts = {
 
         createChart(data);
 
-        function filter(extent){
-            if(!extent) {
+        filter = function (extent) {
+            var start, end, newData;
+            if (!extent) {
                 return;
             }
 
-            var start = extent[0];
-            var end = extent[1];
-            var newData = data.filter(function(element) {
+            start = extent[0];
+            end = extent[1];
+            newData = data.filter(function (element) {
                 var date = parseDate(element.date);
                 return date >= start && date < end;
             });
@@ -305,38 +349,39 @@ var charts = {
     },
 
     pieChart : function (node, data) {
+        'use strict';
     // set dimensions
-        var width = 350,
+        var width = 360,
             height = 200,
             radius = 100,
-            color = d3.scale.category20c();
+            color = d3.scale.category20c(),
+            parseDate = d3.time.format("%b %Y").parse,
+            svgContainer = node.append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", "translate(" + width / 2 + "," + radius + ")"),
+            createChart,
+            filter;
 
-        var parseDate = d3.time.format("%b %Y").parse;
-
-        var svgContainer = node.append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .append("g")
-            .attr("transform", "translate(" + width / 2 + "," + radius + ")");
-
-        var createChart = function(chartData) {
-
+        createChart = function (chartData) {
+            var selection, arc, pie, arcs;
             svgContainer.selectAll("g").remove();
 
-            var selection = svgContainer.data([chartData]);
+            selection = svgContainer.data([chartData]);
 
-            var arc = d3.svg
+            arc = d3.svg
                 .arc()
                 .outerRadius(radius)
                 .innerRadius(radius - 50);
 
-            var pie = d3.layout
+            pie = d3.layout
                 .pie()
                 .value(function (d) {
                     return d.value;
                 });
 
-            var arcs = selection.selectAll("g.slice")
+            arcs = selection.selectAll("g.slice")
                 .data(pie)
                 .enter()
                 .append("g")
@@ -347,14 +392,14 @@ var charts = {
                     return color(i);
                 })
                 .transition().delay(function (d, i) {
-                    return  i * 100;
+                    return i * 100;
                 }).duration(1500)
                 .attrTween('d', function (d) {
                     var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
                     return function (t) {
                         d.endAngle = i(t);
                         return arc(d);
-                    }
+                    };
                 });
     //        arcs.append("text")
     //            .attr("transform", function (d) {
@@ -372,14 +417,15 @@ var charts = {
 
         createChart(data);
 
-        function filter(extent){
-            if(!extent) {
+        filter = function (extent) {
+            var start, end, newData;
+            if (!extent) {
                 return;
             }
 
-            var start = extent[0];
-            var end = extent[1];
-            var newData = data.filter(function(element) {
+            start = extent[0];
+            end = extent[1];
+            newData = data.filter(function (element) {
                 var date = parseDate(element.date);
                 return date >= start && date < end;
             });
@@ -394,32 +440,40 @@ var charts = {
     },
 
     timeBar : function (node, data) {
-
+        'use strict';
         var margin = {top: 10, right: 25, bottom: 20, left: 25},
-            width = 1170 - margin.left - margin.right ,
-            height = 65 - margin.top - margin.bottom;
+            width = 1140 - margin.left - margin.right,
+            height = 65 - margin.top - margin.bottom,
+            parseDate = d3.time.format("%b %Y").parse,
+            x,
+            y,
+            xAxis,
+            brush,
+            brushended,
+            svgContainer,
+            area,
+            gBrush;
 
-        var parseDate = d3.time.format("%b %Y").parse;
-
-        var x = d3.time.scale()
-                .range([0, width])
-                .domain(d3.extent(data.map(function (d) {
-                    return parseDate(d.date);
-                }))),
-            y = d3.scale.linear()
-                .range([height, 0])
-                .domain([0, d3.max(data, function (d) {
-                    return d.value;
-                })]);
+        x = d3.time.scale()
+            .range([0, width])
+            .domain(d3.extent(data.map(function (d) {
+                return parseDate(d.date);
+            })));
+        y = d3.scale.linear()
+            .range([height, 0])
+            .domain([0, d3.max(data, function (d) {
+                return d.value;
+            })]);
 
         //create axis objects
-        var xAxis = d3.svg.axis()
+        xAxis = d3.svg.axis()
             .scale(x)
             .orient("bottom");
 
-        var brush;
-        var brushended =  function() {
-            if (!d3.event.sourceEvent) return; // only transition after input
+        brushended =  function () {
+            if (!d3.event.sourceEvent) {
+                return; // only transition after input
+            }
             var extent0 = brush.extent(),
                 extent1 = extent0.map(d3.time.month.round);
 
@@ -441,13 +495,13 @@ var charts = {
             .extent([parseDate(data[0].date), parseDate(data[1].date)])
             .on("brushend", brushended);
 
-        var svgContainer = node.append("svg")
+        svgContainer = node.append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        var area = d3.svg.area()
+        area = d3.svg.area()
             .interpolate("monotone")
             .x(function (d) {
                 return x(parseDate(d.date));
@@ -468,7 +522,7 @@ var charts = {
             .append("path")
             .attr("d", area(data));
 
-        var gBrush = svgContainer.append("g")
+        gBrush = svgContainer.append("g")
             .attr("class", "brush")
             .call(brush)
             .call(brush.event);
@@ -478,10 +532,13 @@ var charts = {
 
         return svgContainer;
     },
+
     timeRangeChangedListeners: [],
-    timeRangeChanged : function (extent){
+
+    timeRangeChanged : function (extent) {
+        'use strict';
         var i;
-        for(i=0; i<charts.timeRangeChangedListeners.length; i++){
+        for (i = 0; i < charts.timeRangeChangedListeners.length; i = i + 1) {
             charts.timeRangeChangedListeners[i](extent);
         }
     }
