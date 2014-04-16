@@ -365,7 +365,7 @@ var charts = {
             filter;
 
         createChart = function (chartData) {
-            var selection, arc, arc2, pie, arcs;
+            var selection, arc, arc2, arc3, pie, arcs;
             svgContainer.selectAll("g").remove();
 
             selection = svgContainer.data([chartData]);
@@ -373,12 +373,17 @@ var charts = {
             arc = d3.svg
                 .arc()
                 .outerRadius(radius - 10)
-                .innerRadius(radius - 60);
+                .innerRadius(radius - 40);
 
             arc2 = d3.svg
                 .arc()
                 .outerRadius(radius)
-                .innerRadius(radius - 60);
+                .innerRadius(radius - 40);
+
+            arc3 = d3.svg
+                .arc()
+                .outerRadius(radius - 42.5)
+                .innerRadius(radius - 45);
 
             pie = d3.layout
                 .pie()
@@ -391,17 +396,40 @@ var charts = {
                 .enter()
                 .append("g")
                 .attr("class", "slice")
-                .on("mouseover",function (d, i){
+                .on("mouseover", function (d, i) {
+
                     d3.select(this)
                         .select("path")
                         .transition()
-                        .duration(500).attr("d", arc2);
+                        .duration(250).attr("d", arc2);
+
+                    d3.select(this)
+                        .append("path")
+                        .attr("id","hover")
+                        .attr("fill", color(i))
+                        .transition()
+                        .duration(250)
+                        .attr("d", arc3);
+
+                    d3.select(this.parentNode)
+                        .append("text")
+                        .attr("text-anchor", "middle")
+                        .text(chartData[i].category + ": " + chartData[i].value);
                 })
-                .on("mouseout",function (d, i){
+                .on("mouseout", function (d, i) {
                     d3.select(this)
                         .select("path")
                         .transition()
-                        .duration(500).attr("d", arc);
+                        .duration(250)
+                        .attr("d", arc);
+
+                    d3.select(this)
+                        .select("#hover")
+                        .remove();
+
+                    d3.select(this.parentNode)
+                        .select("text")
+                        .remove();
                 });
 
             arcs.append("path")
@@ -412,6 +440,8 @@ var charts = {
                     return i * 100;
                 }).duration(1500)
                 .attrTween('d', function (d) {
+                    d.startAngle = d.startAngle + 0.02;
+                    d.endAngle = d.endAngle - 0.02;
                     var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
                     return function (t) {
                         d.endAngle = i(t);
