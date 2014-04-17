@@ -7,12 +7,10 @@ var charts = {
         var margin = {top: 10, right: 0, bottom: 20, left: 30},
             width = 360 - margin.left - margin.right,
             height = 240 - margin.top - margin.bottom,
+            parseDate = d3.time.format("%b %Y").parse,
             svgContainer,
-            parseDate,
             createChart,
             filter;
-
-        parseDate = d3.time.format("%b %Y").parse;
 
         // create svg element to hold chart
         svgContainer = node.append("svg")
@@ -59,12 +57,12 @@ var charts = {
                 .delay(function (d, i) {
                     return 100 * i;
                 })
-                .duration(1500)
+                .duration(700)
                 .attr("width", function (d) {
                     return scale(d.value);
                 })
                 .attr("height", (height / chartData.length) - 1)
-                .ease("elastic");
+                .ease("back-out");
 
             svgContainer.append("g")
                 .attr("class", "y axis")
@@ -314,14 +312,14 @@ var charts = {
                 .delay(function (d, i) {
                     return 100 * i;
                 })
-                .duration(1500)
+                .duration(700)
                 .attr("y", function (d) {
                     return y(d.value);
                 })
                 .attr("height", function (d) {
                     return height - y(d.value);
                 })
-                .ease("elastic")
+                .ease("back-out")
                 .attr("width", x.rangeBand());
         };
 
@@ -405,7 +403,7 @@ var charts = {
 
                     d3.select(this)
                         .append("path")
-                        .attr("id","hover")
+                        .attr("id", "hover")
                         .attr("fill", color(i))
                         .transition()
                         .duration(250)
@@ -586,7 +584,9 @@ var charts = {
         'use strict';
         var i;
         for (i = 0; i < charts.timeRangeChangedListeners.length; i = i + 1) {
-            charts.timeRangeChangedListeners[i](extent);
+            if (typeof charts.timeRangeChangedListeners[i] === 'function') {
+                charts.timeRangeChangedListeners[i](extent);
+            }
         }
     }
 };
