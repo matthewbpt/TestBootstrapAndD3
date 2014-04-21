@@ -1,39 +1,55 @@
 /**
  * Created by matthew on 13/04/14.
  */
+
+ /*
+ *
+ * input object:
+ *  targetnode:
+ *  margin: top, right, bottom, left
+ *  width: x - left - right
+ *  height: y - top - bottom
+ *  data (array)
+ *  xattribute
+ *  yattribute
+ *  xformat
+ *  yformat
+ *
+ * */
 var charts = {
-    horizontalColumnChart : function (node, data) {
+    horizontalColumnChart : function (args) {
         'use strict';
-        var margin = {top: 10, right: 0, bottom: 20, left: 30},
-            width = 360 - margin.left - margin.right,
-            height = 240 - margin.top - margin.bottom,
+        var margin = args.margin,//{top: 10, right: 0, bottom: 20, left: 30},
+            width = args.width,//360 - margin.left - margin.right,
+            height = args.height,//;200 - margin.top - margin.bottom,
+            xattribute = args.xattribute,
+            yattribute = args.yattribute,
             svgContainer,
-            parseDate,
+            parseDate = d3.time.format("%b %Y").parse,
             createChart,
             filter;
 
-        parseDate = d3.time.format("%b %Y").parse;
-
         // create svg element to hold chart
-        svgContainer = node.append("svg")
+        svgContainer = args.node.append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         createChart = function (chartData) {
-            var max, scale, verticalScale, horizontalAxis, verticalAxis, bar;
+            var max, scale, verticalScale, horizontalAxis, verticalAxis, bar,
+                yaxislabelformat = d3.time.format('%b');
 
             svgContainer.selectAll("g").remove();
             // set scaling
             max = d3.max(chartData, function (d) {
-                return +d.value;
+                return +d[xattribute];
             });
             scale = d3.scale.linear().domain([0, max]).range([0, width]);
             verticalScale = d3.scale.ordinal()
                 .rangeRoundBands([0, height], 0.1)
                 .domain(chartData.map(function (d) {
-                    return d.category;
+                    return d[yattribute];
                 }));
 
             horizontalAxis = d3.svg.axis()
@@ -42,7 +58,10 @@ var charts = {
 
             verticalAxis = d3.svg.axis()
                 .scale(verticalScale)
-                .orient("left");
+                .orient("left")
+                .tickFormat(function (d) {
+                    return yaxislabelformat(parseDate(d));
+                });
 
             bar = svgContainer.selectAll("g")
                 .data(chartData)
@@ -61,9 +80,9 @@ var charts = {
                 })
                 .duration(1500)
                 .attr("width", function (d) {
-                    return scale(d.value);
+                    return scale(d[xattribute]);
                 })
-                .attr("height", (height / chartData.length) - 1)
+                .attr("height", verticalScale.rangeBand())
                 .ease("elastic");
 
             svgContainer.append("g")
@@ -76,7 +95,7 @@ var charts = {
                 .call(verticalAxis);
         };
 
-        createChart(data);
+        createChart(args.data);
 
         filter = function (extent) {
             var start, end, newData;
@@ -86,8 +105,8 @@ var charts = {
 
             start = extent[0];
             end = extent[1];
-            newData = data.filter(function (element) {
-                var date = parseDate(element.date);
+            newData = args.data.filter(function (element) {
+                var date = parseDate(element[yattribute]);
                 return date >= start && date < end;
             });
 
@@ -397,7 +416,6 @@ var charts = {
                 .append("g")
                 .attr("class", "slice")
                 .on("mouseover", function (d, i) {
-
                     d3.select(this)
                         .select("path")
                         .transition()
@@ -405,7 +423,7 @@ var charts = {
 
                     d3.select(this)
                         .append("path")
-                        .attr("id","hover")
+                        .attr("id", "hover")
                         .attr("fill", color(i))
                         .transition()
                         .duration(250)
@@ -416,7 +434,7 @@ var charts = {
                         .attr("text-anchor", "middle")
                         .text(chartData[i].category + ": " + chartData[i].value);
                 })
-                .on("mouseout", function (d, i) {
+                .on("mouseout", function () {
                     d3.select(this)
                         .select("path")
                         .transition()
@@ -501,18 +519,20 @@ var charts = {
             area,
             gBrush;
 
+        // create scales
         x = d3.time.scale()
             .range([0, width])
             .domain(d3.extent(data.map(function (d) {
                 return parseDate(d.date);
             })));
+
         y = d3.scale.linear()
             .range([height, 0])
             .domain([0, d3.max(data, function (d) {
                 return d.value;
             })]);
 
-        //create axis objects
+        // create axis objects
         xAxis = d3.svg.axis()
             .scale(x)
             .orient("bottom");
@@ -578,6 +598,111 @@ var charts = {
             .attr("height", height);
 
         return svgContainer;
+    },
+
+    areaChart: function (node, data) {
+        'use strict';
+        var margin = {top: 10, right: 0, bottom: 20, left: 25},
+            width = 360 - margin.left - margin.right,
+            height = 200 - margin.top - margin.bottom,
+            parseDate = d3.time.format("%b %Y").parse,
+            svgContainer,
+            createChart,
+            filter;
+
+        svgContainer = node.append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        createChart = function (chartData) {
+
+            var max, x, y, xAxis, yAxis, lineFunction, offset, line, totalLength, selection, area;
+            svgContainer.selectAll("g").remove();
+            svgContainer.selectAll(".bar").remove();
+            // create vertical scale
+            max = d3.max(chartData, function (d) {
+                return +d.value;
+            });
+            y = d3.scale.linear().domain([0, max]).range([height, 0]);
+
+            //create horizontal scale
+            x = d3.scale.ordinal()
+                .rangeRoundBands([0, width], 0.1)
+                .domain(chartData.map(function (d) {
+                    return d.category;
+                }));
+
+            //create axis objects
+            xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom");
+
+            yAxis = d3.svg.axis()
+                .scale(y)
+                .orient("left");
+
+            // add axes to contained object
+            svgContainer.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+            svgContainer.append("g")
+                .attr("class", "y axis")
+                .call(yAxis);
+
+            offset = (width / (chartData.length - 1)) / 4;
+
+            area = d3.svg.area()
+                .interpolate("monotone")
+                .x(function (d) {
+                    return x(d.category);
+                })
+                .y0(height)
+                .y1(function (d) {
+                    return y(d.value);
+                });
+
+            line = svgContainer.append("g")
+                .attr("transform", "translate(" + offset + ",0)")
+                .attr("class", "area")
+                .append("path")
+                .attr("d", area(chartData));
+
+            totalLength = line.node().getTotalLength();
+
+            line.attr("stroke-dasharray", totalLength + " " + totalLength)
+                .attr("stroke-dashoffset", totalLength)
+                .transition()
+                .duration(1500)
+                .ease("linear")
+                .attr("stroke-dashoffset", 0);
+
+        };
+
+        createChart(data);
+
+        filter = function (extent) {
+            var start, end, newData;
+            if (!extent) {
+                return;
+            }
+
+            start = extent[0];
+            end = extent[1];
+            newData = data.filter(function (element) {
+                var date = parseDate(element.date);
+                return date >= start && date < end;
+            });
+
+            createChart(newData);
+        };
+
+        charts.timeRangeChangedListeners.push(filter);
+
+        return svgContainer;
+
     },
 
     timeRangeChangedListeners: [],

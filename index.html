@@ -63,6 +63,10 @@
         <div class="col-lg-4 col-md-4 col-sm-6" id="graph4">
             <h2>Horizontal Bar Chart</h2>
         </div>
+
+        <div class="col-lg-4 col-md-4 col-sm-6" id="graph5">
+            <h2>Area Chart</h2>
+        </div>
     </div>
 </div>
 
@@ -93,11 +97,22 @@
         {"label":"two", "value":50},
         {"label":"three", "value":30}];
 
+    var args = {
+            margin: { top: 10, right: 0, bottom: 20, left: 30 },
+            width: 360 - 30 - 0,
+            height: 200 - 10 - 20,
+            data: data,
+            xattribute: 'value',
+            yattribute: 'date',
+            node: d3.select("#graph4")
+    };
+
     charts.lineChart(d3.select("#graph1"),data);
     charts.verticalColumnChart(d3.select("#graph2"),data);
     charts.pieChart(d3.select("#graph3"),data);
-    charts.horizontalColumnChart(d3.select("#graph4"),data);
-    charts.timeBar(d3.select("#timebar"),data)
+    charts.horizontalColumnChart(args);
+    charts.timeBar(d3.select("#timebar"),data);
+    charts.areaChart(d3.select("#graph5"),data);
 </script>
 </body>
 </html>
