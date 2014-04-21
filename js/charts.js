@@ -78,12 +78,12 @@ var charts = {
                 .delay(function (d, i) {
                     return 100 * i;
                 })
-                .duration(1500)
+                .duration(700)
                 .attr("width", function (d) {
                     return scale(d[xattribute]);
                 })
-                .attr("height", verticalScale.rangeBand())
-                .ease("elastic");
+                .attr("height", (height / chartData.length) - 1)
+                .ease("back-out");
 
             svgContainer.append("g")
                 .attr("class", "y axis")
@@ -333,14 +333,14 @@ var charts = {
                 .delay(function (d, i) {
                     return 100 * i;
                 })
-                .duration(1500)
+                .duration(700)
                 .attr("y", function (d) {
                     return y(d.value);
                 })
                 .attr("height", function (d) {
                     return height - y(d.value);
                 })
-                .ease("elastic")
+                .ease("back-out")
                 .attr("width", x.rangeBand());
         };
 
@@ -416,6 +416,7 @@ var charts = {
                 .append("g")
                 .attr("class", "slice")
                 .on("mouseover", function (d, i) {
+
                     d3.select(this)
                         .select("path")
                         .transition()
@@ -532,7 +533,7 @@ var charts = {
                 return d.value;
             })]);
 
-        // create axis objects
+        //create axis objects
         xAxis = d3.svg.axis()
             .scale(x)
             .orient("bottom");
@@ -711,7 +712,9 @@ var charts = {
         'use strict';
         var i;
         for (i = 0; i < charts.timeRangeChangedListeners.length; i = i + 1) {
-            charts.timeRangeChangedListeners[i](extent);
+            if (typeof charts.timeRangeChangedListeners[i] === 'function') {
+                charts.timeRangeChangedListeners[i](extent);
+            }
         }
     }
 };
